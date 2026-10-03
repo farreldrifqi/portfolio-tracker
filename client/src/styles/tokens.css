@@ -1,0 +1,31 @@
+:root {
+  color-scheme: light dark;
+
+  --kertas: #edf1f2;
+  --permukaan: #f8faf9;
+  --tinta: #14252c;
+  --redup: #566870;
+  --garis: #c6d1d5;
+  --oker: #8f5e00;
+  --untung: #0b7a60;
+  --rugi: #b8234f;
+
+  --font-ui: "Public Sans", system-ui, sans-serif;
+  --font-judul: "Familjen Grotesk", "Public Sans", system-ui, sans-serif;
+
+  --lebar-konten: 68rem;
+  --radius-kontrol: 4px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --kertas: #0f1b20;
+    --permukaan: #16262d;
+    --tinta: #e6eef0;
+    --redup: #8fa2aa;
+    --garis: #2a3e46;
+    --oker: #e0a82e;
+    --untung: #3ccb9e;
+    --rugi: #ff7a9c;
+  }
+}
