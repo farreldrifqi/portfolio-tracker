@@ -6,6 +6,7 @@ import { store } from "./store";
 import App from "./App";
 import "./styles/tokens.css";
 import "./styles/base.css";
+import "./styles/portofolio.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

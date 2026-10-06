@@ -109,7 +109,8 @@ a {
   font-weight: 400;
   color: var(--redup);
 }
-input {
+input,
+select {
   width: 100%;
   min-height: 2.75rem;
   padding: 0.65rem 0.75rem;
@@ -119,7 +120,8 @@ input {
   color: inherit;
   font: inherit;
 }
-input:user-invalid {
+input:user-invalid,
+select:user-invalid {
   border-color: var(--rugi);
 }
 

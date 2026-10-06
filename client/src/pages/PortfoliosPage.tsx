@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useCreatePortfolioMutation, useGetPortfoliosQuery } from "../store/api";
 import { pesanError } from "../lib/errors";
+import { Link } from "react-router-dom";
 
 export default function PortfoliosPage() {
   const { data, isLoading, isError } = useGetPortfoliosQuery();
@@ -34,7 +35,7 @@ export default function PortfoliosPage() {
           <ul className="daftar">
             {data.portfolios.map((p) => (
               <li key={p.id} className="baris">
-                {p.name}
+                <Link to={`/portofolio/${p.id}`}>{p.name}</Link>
               </li>
             ))}
           </ul>

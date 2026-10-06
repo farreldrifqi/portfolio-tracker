@@ -1,0 +1,281 @@
+.sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.untung {
+  color: var(--untung);
+}
+.rugi {
+  color: var(--rugi);
+}
+
+.judul-halaman,
+.bagian {
+  display: grid;
+  gap: 0.75rem;
+}
+.bagian {
+  gap: 1rem;
+}
+
+/* Ringkasan berupa kalimat */
+.ringkas {
+  display: grid;
+  gap: 0.5rem;
+}
+.ringkas p:first-child:not(.redup) {
+  max-width: 40ch;
+  font: 500 clamp(1.25rem, 1rem + 1.2vw, 1.625rem) / 1.35 var(--font-judul);
+}
+
+/* Baris posisi */
+.posisi {
+  display: grid;
+  grid-template-columns: minmax(9rem, 12rem) minmax(8rem, 1fr) minmax(8rem, 11rem) minmax(7rem, 9rem);
+  grid-template-areas: "aset rel nilai hasil";
+  gap: 0.75rem 1.5rem;
+  align-items: center;
+  padding: 1rem 0;
+  border-top: 1px solid var(--garis);
+}
+.posisi:last-child {
+  border-bottom: 1px solid var(--garis);
+}
+.posisi__aset {
+  grid-area: aset;
+}
+.posisi > .rel {
+  grid-area: rel;
+}
+.posisi__nilai {
+  grid-area: nilai;
+}
+.posisi__hasil {
+  grid-area: hasil;
+  font-weight: 600;
+  text-align: right;
+}
+.posisi__aset > span,
+.posisi__nilai > span,
+.posisi__hasil > span {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
+
+/* Rel: modal di tengah, titik = harga sekarang */
+.rel {
+  position: relative;
+  height: 1.25rem;
+}
+.rel::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 2px;
+  background: var(--garis);
+  transform: translateY(-50%);
+}
+.rel__isi {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--kiri) * 100%);
+  width: calc(var(--lebar) * 100%);
+  height: 6px;
+  transform: translateY(-50%);
+}
+.rel__isi--naik {
+  background: var(--untung);
+}
+.rel__isi--turun {
+  background: var(--rugi);
+}
+.rel__modal {
+  position: absolute;
+  inset-block: 0;
+  left: 50%;
+  width: 2px;
+  background: var(--oker);
+}
+.rel__harga {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--pos) * 100%);
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--tinta);
+  box-shadow: 0 0 0 2px var(--kertas);
+  transform: translate(-50%, -50%);
+}
+
+/* Form transaksi */
+.formulir--rapat {
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  align-items: start;
+}
+.formulir--rapat .galat {
+  grid-column: 1 / -1;
+}
+.formulir--rapat .tombol {
+  justify-self: start;
+  align-self: end;
+}
+
+/* Tabel transaksi */
+.tabel {
+  overflow: auto;
+  max-inline-size: 100%;
+  container-type: inline-size;
+}
+.tabel table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+.tabel th,
+.tabel td {
+  padding: 0.65rem 0.75rem 0.65rem 0;
+  border-top: 1px solid var(--garis);
+  text-align: left;
+  white-space: nowrap;
+}
+.tabel thead th {
+  border-top: 0;
+  border-bottom: 1px solid var(--garis);
+  color: var(--redup);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+.tabel tbody th {
+  font-weight: 400;
+}
+.tabel .angka {
+  text-align: right;
+}
+
+@container (width < 40rem) {
+  table,
+  thead,
+  tbody,
+  tr,
+  th,
+  td {
+    display: block;
+  }
+  thead {
+    display: none;
+  }
+  tr {
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--garis);
+  }
+  .tabel th,
+  .tabel td,
+  .tabel td.angka {
+    padding: 0.15rem 0;
+    border: 0;
+    text-align: left;
+    white-space: normal;
+  }
+  td[data-label]::before {
+    content: attr(data-label) ": ";
+    content: attr(data-label) ": " / attr(data-label);
+    color: var(--redup);
+  }
+}
+
+@media (max-width: 48rem) {
+  .posisi {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "aset hasil"
+      "rel rel"
+      "nilai nilai";
+  }
+}
+
+/* Grafik riwayat nilai */
+.grafik {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+.grafik__baca {
+  min-height: 1.55em;
+  font-size: 0.9375rem;
+}
+.grafik__area {
+  inline-size: 100%;
+}
+.grafik svg {
+  display: block;
+  inline-size: 100%;
+  touch-action: pan-y;
+}
+.grafik svg:focus-visible {
+  outline: 2px solid var(--oker);
+  outline-offset: 4px;
+}
+.grafik__garis {
+  stroke: var(--garis);
+  stroke-width: 1;
+}
+.grafik__sumbu {
+  fill: var(--redup);
+  font: 400 12px var(--font-ui);
+}
+.grafik__nilai {
+  fill: none;
+  stroke: var(--tinta);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.grafik__modal {
+  fill: none;
+  stroke: var(--oker);
+  stroke-width: 2;
+}
+.grafik__label {
+  font: 600 12px var(--font-ui);
+}
+.grafik__label--nilai {
+  fill: var(--tinta);
+}
+.grafik__label--modal {
+  fill: var(--oker);
+}
+.grafik__penanda {
+  stroke: var(--redup);
+  stroke-dasharray: 3 3;
+}
+.grafik__titik {
+  stroke: var(--kertas);
+  stroke-width: 2;
+}
+.grafik__titik--nilai {
+  fill: var(--tinta);
+}
+.grafik__titik--modal {
+  fill: var(--oker);
+}
+
+.aksi {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.5rem 1.5rem;
+}
+.aksi__tombol {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.aksi .galat {
+  flex-basis: 100%;
+}

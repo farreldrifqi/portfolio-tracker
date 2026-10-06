@@ -5,7 +5,16 @@ import { requireAuth } from "../middleware/auth";
 import { formatIssues, parseId } from "../lib/validate";
 import { portfolioSchema, transactionSchema } from "../schemas/portfolio";
 import { buildSummary } from "../lib/summary";
-import { getCryptoPrices, getQuoteCurrency } from "../lib/prices";
+import { buildHistory } from "../lib/history";
+import {
+  getCryptoPrices,
+  getCryptoSeries,
+  getQuoteCurrency,
+  getStockPrices,
+  getStockSeries,
+  HARI_RIWAYAT,
+} from "../lib/prices";
+import { kepemilikanValid } from "../lib/holdings";
 
 export const portfolioRouter = Router();
 
@@ -13,6 +22,17 @@ portfolioRouter.use(requireAuth);
 
 function findOwnedPortfolio(id: number, userId: number) {
   return prisma.portfolio.findFirst({ where: { id, userId } });
+}
+
+function simbolPer(
+  transactions: { asset: { symbol: string; type: string } }[],
+  type: "CRYPTO" | "STOCK",
+) {
+  return [
+    ...new Set(
+      transactions.filter((t) => t.asset.type === type).map((t) => t.asset.symbol),
+    ),
+  ];
 }
 
 portfolioRouter.get("/", async (req, res) => {
@@ -144,19 +164,20 @@ portfolioRouter.post("/:id/transactions", async (req, res) => {
   });
 
   if (type === "SELL") {
-    const totals = await prisma.transaction.groupBy({
-      by: ["type"],
+    const sebelumnya = await prisma.transaction.findMany({
       where: { portfolioId: id, assetId: asset.id },
-      _sum: { quantity: true },
+      select: { id: true, type: true, quantity: true, executedAt: true },
     });
-    const zero = new Prisma.Decimal(0);
-    const bought = totals.find((t) => t.type === "BUY")?._sum.quantity ?? zero;
-    const sold = totals.find((t) => t.type === "SELL")?._sum.quantity ?? zero;
-    const held = bought.minus(sold);
+    const baru = {
+      id: Number.MAX_SAFE_INTEGER,
+      type,
+      quantity: new Prisma.Decimal(quantity),
+      executedAt,
+    };
 
-    if (new Prisma.Decimal(quantity).gt(held)) {
+    if (!kepemilikanValid([...sebelumnya, baru])) {
       res.status(400).json({
-        error: `Jumlah jual melebihi kepemilikan (dimiliki: ${held.toString()})`,
+        error: "Jumlah jual melebihi kepemilikan pada tanggal tersebut",
       });
       return;
     }
@@ -188,18 +209,54 @@ portfolioRouter.get("/:id/summary", async (req, res) => {
     orderBy: [{ executedAt: "asc" }, { id: "asc" }],
   });
 
-  const cryptoSymbols = [
+  const symbolsOf = (type: "CRYPTO" | "STOCK") => [
     ...new Set(
       transactions
-        .filter((t) => t.asset.type === "CRYPTO")
+        .filter((t) => t.asset.type === type)
         .map((t) => t.asset.symbol),
     ),
   ];
-  const prices = await getCryptoPrices(cryptoSymbols);
+  
+  const [crypto, stocks] = await Promise.all([
+    getCryptoPrices(simbolPer(transactions, "CRYPTO")),
+    getStockPrices(simbolPer(transactions, "STOCK")),
+  ]);
+  const prices = { ...crypto, ...stocks };
 
   res.json({
     portfolioId: id,
     quoteCurrency: getQuoteCurrency(),
     ...buildSummary(transactions, prices),
+  });
+});
+
+portfolioRouter.get("/:id/history", async (req, res) => {
+  const id = parseId(req.params.id);
+  if (!id) {
+    res.status(400).json({ error: "ID tidak valid" });
+    return;
+  }
+
+  const portfolio = await findOwnedPortfolio(id, req.userId!);
+  if (!portfolio) {
+    res.status(404).json({ error: "Portofolio tidak ditemukan" });
+    return;
+  }
+
+  const transactions = await prisma.transaction.findMany({
+    where: { portfolioId: id },
+    include: { asset: true },
+    orderBy: [{ executedAt: "asc" }, { id: "asc" }],
+  });
+
+  const [crypto, stocks] = await Promise.all([
+    getCryptoSeries(simbolPer(transactions, "CRYPTO")),
+    getStockSeries(simbolPer(transactions, "STOCK")),
+  ]);
+
+  res.json({
+    portfolioId: id,
+    quoteCurrency: getQuoteCurrency(),
+    ...buildHistory(transactions, { ...crypto, ...stocks }, HARI_RIWAYAT, new Date()),
   });
 });
